@@ -1,8 +1,7 @@
-function App() {
+export default function App() {
   return (
     <div>
-      <h1>Hello Mani 🚀</h1>
-      <p>Frontend is working successfully.</p>
+      <h1>WORKING NOW 🚀</h1>
     </div>
   );
 }
