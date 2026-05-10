@@ -23,3 +23,18 @@ body {
 .container {
   padding: 20px;
 }
+
+.issue-card {
+  background: white;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 10px;
+}
+
+.issue-card button {
+  background: black;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+}
