@@ -1,7 +1,10 @@
-export default function App() {
+function App() {
   return (
     <div>
-      <h1>WORKING NOW 🚀</h1>
+      <h1>CommunityServe</h1>
+      <p>Frontend setup completed successfully 🚀</p>
     </div>
   );
 }
+
+export default App;
