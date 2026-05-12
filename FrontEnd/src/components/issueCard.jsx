@@ -1,21 +1,29 @@
-function IssueCard({ issue }) {
+const IssueCard = ({ issue, handleVote }) => {
   return (
-    <div className="issue-card">
-      <h3>{issue.title}</h3>
+    <div
+      style={{
+        border: "1px solid black",
+        padding: "20px",
+        marginBottom: "20px",
+      }}
+    >
+      <h2>{issue.title}</h2>
 
       <p>{issue.description}</p>
 
-      <p>
-        <strong>Location:</strong> {issue.location}
-      </p>
+      <p>Category: {issue.category}</p>
 
-      <p>
-        <strong>Status:</strong> {issue.status}
-      </p>
+      <p>Location: {issue.location}</p>
 
-      <button>Upvote ({issue.votes})</button>
+      <p>Status: {issue.status}</p>
+
+      <p>Votes: {issue.votes}</p>
+
+      <button onClick={() => handleVote(issue._id)}>
+        Vote
+      </button>
     </div>
   );
-}
+};
 
 export default IssueCard;
