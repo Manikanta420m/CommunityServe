@@ -1,13 +1,14 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Navbar from "./components/navbar";
-
+import Navbar from "./components/Navbar";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import CreateIssue from "./pages/CreateIssue";
+import Profile from "./pages/Profile";
 <Route path="/profile" element={<Profile />} />
 function App() {
   return (

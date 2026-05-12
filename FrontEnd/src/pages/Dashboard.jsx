@@ -35,7 +35,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div>
+<div className="container">
       <h1>Community Issues Dashboard</h1>
 
       {issues.map((issue) => (

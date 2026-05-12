@@ -2,12 +2,13 @@ const IssueCard = ({ issue, handleVote }) => {
   return (
     <div
       style={{
-        border: "1px solid black",
-        padding: "20px",
-        marginBottom: "20px",
-        borderRadius: "10px",
-        backgroundColor: "white",
-      }}
+  border: "1px solid #ddd",
+  borderRadius: "10px",
+  padding: "20px",
+  marginBottom: "20px",
+  backgroundColor: "white",
+  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+}}
     >
       <h2>{issue.title}</h2>
 

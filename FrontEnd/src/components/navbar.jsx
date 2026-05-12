@@ -13,13 +13,21 @@ const Navbar = () => {
   return (
     <div
       style={{
-        display: "flex",
-        gap: "20px",
-        padding: "20px",
-        backgroundColor: "#ddd",
-      }}
+  display: "flex",
+  gap: "20px",
+  padding: "20px",
+  backgroundColor: "#222",
+  color: "white",
+  flexWrap: "wrap",
+  alignItems: "center",
+}}
     >
-      <Link to="/">Dashboard</Link>
+      <Link
+  to="/"
+  style={{ color: "white", textDecoration: "none" }}
+>
+  Dashboard
+</Link>
 
       <Link to="/create-issue">Create Issue</Link>
 

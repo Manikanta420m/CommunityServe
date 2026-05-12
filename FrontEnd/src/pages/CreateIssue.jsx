@@ -30,7 +30,7 @@ const CreateIssue = () => {
   };
 
   return (
-    <div>
+    <div className="container">
       <h1>Create Issue</h1>
 
       <form onSubmit={handleSubmit}>

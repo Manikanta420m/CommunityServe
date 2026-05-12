@@ -1,8 +1,6 @@
 import { useState } from "react";
-import toast from "react-hot-toast";
-import { loginUser } from "../services/authService";
 
-const [loading, setLoading] = useState(false);
+import { loginUser } from "../services/authService";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -23,20 +21,18 @@ const Login = () => {
     try {
       const data = await loginUser(formData);
 
-      console.log(data);
-
       localStorage.setItem("token", data.token);
 
-      toast.success("Login Successful");
+      alert("Login Successful");
     } catch (error) {
       console.log(error);
 
-      toast.error("Login Failed");
+      alert("Login Failed");
     }
   };
 
   return (
-    <div>
+    <div className="container">
       <h1>Login</h1>
 
       <form onSubmit={handleSubmit}>
@@ -47,8 +43,6 @@ const Login = () => {
           onChange={handleChange}
         />
 
-        <br />
-
         <input
           type="password"
           name="password"
@@ -56,11 +50,7 @@ const Login = () => {
           onChange={handleChange}
         />
 
-        <br />
-
-<button type="submit">
-  {loading ? "Loading..." : "Login"}
-</button>
+        <button type="submit">Login</button>
       </form>
     </div>
   );
