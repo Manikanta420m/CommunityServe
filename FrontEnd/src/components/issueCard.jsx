@@ -5,6 +5,8 @@ const IssueCard = ({ issue, handleVote }) => {
         border: "1px solid black",
         padding: "20px",
         marginBottom: "20px",
+        borderRadius: "10px",
+        backgroundColor: "white",
       }}
     >
       <h2>{issue.title}</h2>

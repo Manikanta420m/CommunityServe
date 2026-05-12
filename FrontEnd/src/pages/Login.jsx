@@ -2,6 +2,8 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { loginUser } from "../services/authService";
 
+const [loading, setLoading] = useState(false);
+
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -56,7 +58,9 @@ const Login = () => {
 
         <br />
 
-        <button type="submit">Login</button>
+<button type="submit">
+  {loading ? "Loading..." : "Login"}
+</button>
       </form>
     </div>
   );

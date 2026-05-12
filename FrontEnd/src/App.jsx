@@ -8,7 +8,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import CreateIssue from "./pages/CreateIssue";
-
+<Route path="/profile" element={<Profile />} />
 function App() {
   return (
     <BrowserRouter>

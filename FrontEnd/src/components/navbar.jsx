@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-
+<Link to="/profile">Profile</Link>
+flexWrap: "wrap"
 const Navbar = () => {
   const navigate = useNavigate();
 
