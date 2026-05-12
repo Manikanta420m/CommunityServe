@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import toast from "react-hot-toast";
 import { loginUser } from "../services/authService";
 
 const Login = () => {
@@ -25,11 +25,11 @@ const Login = () => {
 
       localStorage.setItem("token", data.token);
 
-      alert("Login Successful");
+      toast.success("Login Successful");
     } catch (error) {
       console.log(error);
 
-      alert("Login Failed");
+      toast.error("Login Failed");
     }
   };
 

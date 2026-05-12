@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import toast from "react-hot-toast";
 import { createIssue } from "../services/issueService";
 
 const CreateIssue = () => {
@@ -22,12 +22,10 @@ const CreateIssue = () => {
 
     try {
       await createIssue(formData);
-
-      alert("Issue Created Successfully");
+   toast.success("Issue Created Successfully");
     } catch (error) {
       console.log(error);
-
-      alert("Issue Creation Failed");
+      toast.error("Issue Creation Failed");
     }
   };
 
