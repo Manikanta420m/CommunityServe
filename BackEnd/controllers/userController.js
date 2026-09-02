@@ -1,14 +1,13 @@
 const User = require("../models/user");
 const Department = require("../models/Department");
+const Issue = require("../models/Issue");
+const Notification = require("../models/Notification");
 
 const getAssignableUsers = async (req, res) => {
   try {
     const search = req.query.search?.trim();
     const department = req.query.department?.trim();
-    const filter = {
-      role: "authority",
-      isActive: true,
-    };
+    const filter = { role: "authority", isActive: true };
 
     if (department) filter.department = department;
 
@@ -67,6 +66,8 @@ const updateUser = async (req, res) => {
     }
 
     const { role, department, isActive } = req.body;
+    const previousRole = user.role;
+    const previousActive = user.isActive !== false;
 
     if (role !== undefined && !["user", "authority", "admin"].includes(role)) {
       return res.status(400).json({ message: "Invalid user role" });
@@ -99,8 +100,35 @@ const updateUser = async (req, res) => {
 
     await user.save();
 
+    const authorityWasRemoved = previousRole === "authority" && (user.role !== "authority" || !user.isActive);
+    if (authorityWasRemoved) {
+      const assignedIssues = await Issue.find({ assignedTo: user._id }).select("_id title createdBy");
+      if (assignedIssues.length) {
+        await Issue.updateMany({ assignedTo: user._id }, { $set: { assignedTo: null } });
+        await Notification.insertMany(
+          assignedIssues.map((issue) => ({
+            recipient: issue.createdBy,
+            issue: issue._id,
+            type: "system",
+            title: "Issue assignment changed",
+            message: `The authority previously assigned to “${issue.title}” is no longer available. The issue needs reassignment.`,
+          }))
+        );
+      }
+    }
+
+    const becameActive = !previousActive && user.isActive;
+    if (becameActive && user.role === "authority") {
+      await Notification.create({
+        recipient: user._id,
+        type: "system",
+        title: "Authority account activated",
+        message: "Your CommunityServe authority account is active again.",
+      });
+    }
+
     const updatedUser = await user.populate("department", "name code");
-    res.status(200).json(updatedUser.toObject({ versionKey: false }));
+    return res.status(200).json(updatedUser.toObject({ versionKey: false }));
   } catch (error) {
     if (error.name === "ValidationError") return res.status(400).json({ message: error.message });
     res.status(500).json({ message: error.message });
