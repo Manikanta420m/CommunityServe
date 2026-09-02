@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import { getCurrentUser } from "../services/userService";
+import { getCurrentUser, getAssignableUsers } from "../services/userService";
 import { getIssues, updateIssue } from "../services/issueService";
 import { getDepartments } from "../services/departmentService";
 
@@ -12,6 +12,7 @@ const AdminDashboard = () => {
   const [user, setUser] = useState(null);
   const [issues, setIssues] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [officers, setOfficers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
 
@@ -20,12 +21,14 @@ const AdminDashboard = () => {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
       if (currentUser.role !== "admin") return;
-      const [issueData, departmentData] = await Promise.all([
+      const [issueData, departmentData, officerData] = await Promise.all([
         getIssues({ sort: "newest" }),
         getDepartments(),
+        getAssignableUsers(),
       ]);
       setIssues(issueData);
       setDepartments(departmentData);
+      setOfficers(officerData);
     } catch (error) {
       toast.error(error.response?.data?.message || "Unable to load admin dashboard");
     } finally {
@@ -40,34 +43,23 @@ const AdminDashboard = () => {
     pending: issues.filter((issue) => issue.status === "Pending").length,
     progress: issues.filter((issue) => issue.status === "In Progress").length,
     resolved: issues.filter((issue) => ["Resolved", "Closed"].includes(issue.status)).length,
-    unassigned: issues.filter((issue) => !issue.department).length,
+    unassigned: issues.filter((issue) => !issue.department || !issue.assignedTo).length,
   }), [issues]);
-
-  const changeStatus = async (issue, status) => {
-    try {
-      setUpdatingId(issue._id);
-      const updated = await updateIssue(issue._id, { status });
-      setIssues((current) => current.map((item) => item._id === updated._id ? updated : item));
-      toast.success("Issue status updated");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Unable to update status");
-    } finally {
-      setUpdatingId(null);
-    }
-  };
 
   const updateAssignment = async (issue, field, value) => {
     try {
       setUpdatingId(issue._id);
       const updated = await updateIssue(issue._id, { [field]: value });
       setIssues((current) => current.map((item) => item._id === updated._id ? updated : item));
-      toast.success(field === "department" ? "Department updated" : "Officer updated");
+      toast.success(field === "department" ? "Department updated" : field === "assignedTo" ? "Officer updated" : "Target date updated");
     } catch (error) {
       toast.error(error.response?.data?.message || "Unable to update assignment");
     } finally {
       setUpdatingId(null);
     }
   };
+
+  const changeStatus = (issue, status) => updateAssignment(issue, "status", status);
 
   if (loading) return <main className="container"><p>Loading admin dashboard...</p></main>;
   if (!user || user.role !== "admin") return <Navigate to="/" replace />;
@@ -87,7 +79,7 @@ const AdminDashboard = () => {
         <div className="stat-card"><strong>{stats.total}</strong><span>Total issues</span></div>
         <div className="stat-card"><strong>{stats.pending}</strong><span>Pending</span></div>
         <div className="stat-card"><strong>{stats.progress}</strong><span>In progress</span></div>
-        <div className="stat-card"><strong>{stats.unassigned}</strong><span>Awaiting assignment</span></div>
+        <div className="stat-card"><strong>{stats.unassigned}</strong><span>Needs assignment</span></div>
       </section>
 
       <section className="issue-list" style={{ marginTop: 20 }}>
@@ -124,26 +116,26 @@ const AdminDashboard = () => {
               </label>
 
               <label>
+                Assigned officer
+                <select
+                  value={issue.assignedTo?._id || ""}
+                  onChange={(event) => updateAssignment(issue, "assignedTo", event.target.value)}
+                  disabled={updatingId === issue._id}
+                >
+                  <option value="">Unassigned</option>
+                  {officers.map((officer) => (
+                    <option key={officer._id} value={officer._id}>{officer.name} ({officer.role})</option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
                 Target date
                 <input
                   type="date"
                   value={issue.targetDate ? new Date(issue.targetDate).toISOString().slice(0, 10) : ""}
                   onChange={(event) => updateAssignment(issue, "targetDate", event.target.value)}
                   disabled={updatingId === issue._id}
-                />
-              </label>
-
-              <label>
-                Assigned officer
-                <input
-                  value={issue.assignedTo?.name || ""}
-                  placeholder="Officer name / user ID"
-                  onChange={(event) => {
-                    const value = event.target.value.trim();
-                    if (value && value === issue.assignedTo?.name) return;
-                  }}
-                  disabled
-                  title="Officer assignment is supported by the API; officer directory UI will be added with authority accounts."
                 />
               </label>
             </div>
