@@ -23,10 +23,7 @@ const UserManagement = () => {
       const me = await getCurrentUser();
       setCurrentUser(me);
       if (me.role !== "admin") return;
-      const [userData, departmentData] = await Promise.all([
-        getUsers(),
-        getDepartments(),
-      ]);
+      const [userData, departmentData] = await Promise.all([getUsers(), getDepartments()]);
       setUsers(userData);
       setDepartments(departmentData);
     } catch (error) {
@@ -36,17 +33,13 @@ const UserManagement = () => {
     }
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const visibleUsers = useMemo(() => {
     const query = search.trim().toLowerCase();
     return users.filter((user) => {
       const matchesRole = !roleFilter || user.role === roleFilter;
-      const matchesSearch = !query ||
-        user.name.toLowerCase().includes(query) ||
-        user.email.toLowerCase().includes(query);
+      const matchesSearch = !query || user.name.toLowerCase().includes(query) || user.email.toLowerCase().includes(query);
       return matchesRole && matchesSearch;
     });
   }, [users, search, roleFilter]);
@@ -64,6 +57,17 @@ const UserManagement = () => {
     }
   };
 
+  const handleRoleChange = (user, nextRole) => {
+    if (nextRole === "authority" && !user.department?._id) {
+      toast.error("Select a department for this user before making them an authority");
+      return;
+    }
+    saveUser(user._id, {
+      role: nextRole,
+      department: nextRole === "authority" ? user.department._id : null,
+    });
+  };
+
   if (loading) return <main className="container"><p>Loading user management...</p></main>;
   if (!currentUser || currentUser.role !== "admin") return <Navigate to="/" replace />;
 
@@ -79,12 +83,7 @@ const UserManagement = () => {
       </div>
 
       <section className="filter-panel user-filter-panel">
-        <input
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search by name or email"
-          aria-label="Search users"
-        />
+        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by name or email" aria-label="Search users" />
         <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} aria-label="Filter by role">
           <option value="">All roles</option>
           {roles.map((role) => <option key={role} value={role}>{role}</option>)}
@@ -100,21 +99,12 @@ const UserManagement = () => {
               <div>
                 <h2>{user.name}</h2>
                 <p>{user.email}</p>
-                <span className={`badge ${user.isActive ? "" : "status-closed"}`}>
-                  {user.isActive ? "Active" : "Inactive"}
-                </span>
+                <span className={`badge ${user.isActive ? "" : "status-closed"}`}>{user.isActive ? "Active" : "Inactive"}</span>
               </div>
               <div className="user-admin-controls">
                 <label>
                   Role
-                  <select
-                    value={user.role}
-                    disabled={savingId === user._id || user._id === currentUser.id}
-                    onChange={(event) => saveUser(user._id, {
-                      role: event.target.value,
-                      department: event.target.value === "authority" ? user.department?._id || "" : null,
-                    })}
-                  >
+                  <select value={user.role} disabled={savingId === user._id || user._id === currentUser.id} onChange={(event) => handleRoleChange(user, event.target.value)}>
                     {roles.map((role) => <option key={role}>{role}</option>)}
                   </select>
                 </label>
@@ -122,25 +112,14 @@ const UserManagement = () => {
                 {user.role === "authority" && (
                   <label>
                     Department
-                    <select
-                      value={user.department?._id || ""}
-                      disabled={savingId === user._id}
-                      onChange={(event) => saveUser(user._id, { department: event.target.value })}
-                    >
+                    <select value={user.department?._id || ""} disabled={savingId === user._id} onChange={(event) => saveUser(user._id, { department: event.target.value })}>
                       <option value="">Select department</option>
-                      {departments.map((department) => (
-                        <option key={department._id} value={department._id}>{department.name}</option>
-                      ))}
+                      {departments.map((department) => <option key={department._id} value={department._id}>{department.name}</option>)}
                     </select>
                   </label>
                 )}
 
-                <button
-                  type="button"
-                  className={user.isActive ? "danger-button" : "secondary-button"}
-                  disabled={savingId === user._id || user._id === currentUser.id}
-                  onClick={() => saveUser(user._id, { isActive: !user.isActive })}
-                >
+                <button type="button" className={user.isActive ? "danger-button" : "secondary-button"} disabled={savingId === user._id || user._id === currentUser.id} onClick={() => saveUser(user._id, { isActive: !user.isActive })}>
                   {user.isActive ? "Deactivate" : "Activate"}
                 </button>
               </div>
