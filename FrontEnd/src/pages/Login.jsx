@@ -21,7 +21,7 @@ const Login = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       toast.success("Welcome back!");
-      navigate("/");
+      navigate(data.user.role === "corporate_leader" ? "/leader" : "/");
     } catch (error) {
       toast.error(error.response?.data?.message || "Login failed");
     } finally {
