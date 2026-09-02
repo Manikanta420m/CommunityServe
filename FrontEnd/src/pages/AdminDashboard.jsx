@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { getCurrentUser } from "../services/userService";
@@ -17,7 +17,6 @@ const AdminDashboard = () => {
     try {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
-
       if (currentUser.role !== "admin") return;
       setIssues(await getIssues({ sort: "newest" }));
     } catch (error) {
@@ -27,9 +26,7 @@ const AdminDashboard = () => {
     }
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const stats = useMemo(() => ({
     total: issues.length,
@@ -62,6 +59,7 @@ const AdminDashboard = () => {
           <h1>Issue Management</h1>
           <p className="muted">Review community reports and move them through the resolution workflow.</p>
         </div>
+        <Link className="secondary-button" to="/analytics">View Analytics</Link>
       </div>
 
       <section className="stats-grid">
