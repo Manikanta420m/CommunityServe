@@ -23,6 +23,7 @@ const Navbar = () => {
             <Link to="/my-issues">My Issues</Link>
             <Link to="/create-issue">Report Issue</Link>
             {storedUser?.role === "authority" && <Link to="/authority">Authority Workspace</Link>}
+            {storedUser?.role === "corporate_leader" && <Link to="/leader">Leader Portal</Link>}
             {storedUser?.role === "admin" && (
               <>
                 <Link to="/admin">Admin</Link>
@@ -36,6 +37,7 @@ const Navbar = () => {
         ) : (
           <>
             <Link to="/login">Login</Link>
+            <Link to="/leader-login">Leader Login</Link>
             <Link to="/register" className="nav-register">Get Started</Link>
           </>
         )}
