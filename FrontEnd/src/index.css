@@ -33,9 +33,10 @@ button:disabled { cursor: not-allowed; opacity: 0.65; }
 input, textarea, select { width: 100%; border: 1px solid #d0d5dd; background: white; border-radius: 10px; padding: 12px 13px; color: #172033; outline: none; }
 input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
 .secondary-button { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #d0d5dd; background: white; color: #344054; padding: 10px 16px; border-radius: 10px; font-weight: 700; }
+.danger-button { border: 1px solid #fecaca; background: #fff1f2; color: #b42318; padding: 10px 16px; border-radius: 10px; font-weight: 700; }
 
 .issue-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.issue-card, .detail-card, .profile-card, .stat-card, .empty-state, .issue-row { background: white; border: 1px solid #eaecf0; border-radius: 16px; box-shadow: 0 5px 18px rgba(16, 24, 40, 0.05); }
+.issue-card, .detail-card, .profile-card, .stat-card, .empty-state, .issue-row, .user-admin-card { background: white; border: 1px solid #eaecf0; border-radius: 16px; box-shadow: 0 5px 18px rgba(16, 24, 40, 0.05); }
 .issue-card { padding: 22px; }
 .issue-card-topline, .detail-badges, .issue-card-bottom, .issue-row, .issue-row-meta { display: flex; align-items: center; gap: 10px; }
 .issue-card-topline, .issue-card-bottom { justify-content: space-between; }
@@ -82,6 +83,15 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0
 .timeline-item > div { display: grid; gap: 5px; }
 .timeline-item > div > span { font-size: 0.82rem; }
 
+.user-list { display: grid; gap: 14px; }
+.user-admin-card { padding: 20px; }
+.user-admin-summary { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.user-admin-summary h2 { margin: 0 0 5px; font-size: 1.05rem; }
+.user-admin-summary p { margin: 0 0 10px; color: #667085; }
+.user-admin-controls { display: grid; grid-template-columns: repeat(2, minmax(160px, 1fr)) auto; gap: 12px; align-items: end; min-width: min(700px, 60%); }
+.user-admin-controls label { display: grid; gap: 7px; color: #344054; font-size: 0.82rem; font-weight: 700; }
+.user-filter-panel { grid-template-columns: minmax(240px, 1fr) 180px; }
+
 .auth-page { min-height: calc(100vh - 70px); display: grid; place-items: center; padding: 32px 20px; }
 .auth-card { width: min(440px, 100%); background: white; border: 1px solid #eaecf0; border-radius: 18px; padding: 32px; box-shadow: 0 12px 32px rgba(16, 24, 40, 0.08); }
 .auth-card h1 { margin-top: 0; letter-spacing: -0.03em; }
@@ -117,12 +127,14 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0
   .filter-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .issue-grid, .stats-grid, .insight-grid { grid-template-columns: 1fr 1fr; }
   .ai-tools-header { flex-direction: column; }
-  .assignment-grid { grid-template-columns: 1fr; }
+  .assignment-grid, .user-admin-controls { grid-template-columns: 1fr; }
+  .user-admin-controls { min-width: 0; width: 100%; }
+  .user-admin-summary { flex-direction: column; }
 }
 @media (max-width: 640px) {
   .navbar, .page-header, .issue-row { align-items: flex-start; flex-direction: column; }
   .nav-links { gap: 12px; }
-  .filter-panel, .issue-grid, .detail-grid, .stats-grid, .insight-grid { grid-template-columns: 1fr; }
+  .filter-panel, .issue-grid, .detail-grid, .stats-grid, .insight-grid, .user-filter-panel { grid-template-columns: 1fr; }
   .container { width: min(100% - 24px, 1180px); padding-top: 28px; }
   .similar-issue { align-items: flex-start; flex-direction: column; }
   .admin-issue-main { align-items: flex-start; flex-direction: column; }
