@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -10,16 +10,75 @@ const priorities = ["Low", "Medium", "High", "Critical"];
 const CreateIssue = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     category: "Roads",
     location: "",
     priority: "Medium",
+    images: [],
+    coordinates: null,
   });
+
+  const remainingImages = useMemo(() => 5 - formData.images.length, [formData.images.length]);
 
   const handleChange = (event) => {
     setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
+  };
+
+  const addImage = () => {
+    const url = imageUrl.trim();
+    if (!url) return;
+    if (formData.images.length >= 5) {
+      toast.error("You can add up to 5 evidence images");
+      return;
+    }
+
+    try {
+      new URL(url);
+    } catch {
+      toast.error("Enter a valid image URL");
+      return;
+    }
+
+    setFormData((current) => ({ ...current, images: [...current.images, url] }));
+    setImageUrl("");
+  };
+
+  const removeImage = (url) => {
+    setFormData((current) => ({
+      ...current,
+      images: current.images.filter((image) => image !== url),
+    }));
+  };
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by this browser");
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setFormData((current) => ({
+          ...current,
+          coordinates: {
+            latitude: Number(coords.latitude.toFixed(6)),
+            longitude: Number(coords.longitude.toFixed(6)),
+          },
+        }));
+        toast.success("GPS coordinates captured");
+        setLocating(false);
+      },
+      () => {
+        toast.error("Unable to access your location");
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
   };
 
   const handleSubmit = async (event) => {
@@ -89,6 +148,40 @@ const CreateIssue = () => {
             Location
             <input name="location" value={formData.location} onChange={handleChange} placeholder="Street, landmark, area or address" required />
           </label>
+
+          <div className="location-tools">
+            <button type="button" className="secondary-button" onClick={detectLocation} disabled={locating}>
+              {locating ? "Getting GPS..." : "Use my current location"}
+            </button>
+            {formData.coordinates && (
+              <span className="muted">
+                GPS: {formData.coordinates.latitude}, {formData.coordinates.longitude}
+              </span>
+            )}
+          </div>
+
+          <label>
+            Evidence image URL
+            <div className="inline-form-row">
+              <input value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://example.com/photo.jpg" />
+              <button type="button" className="secondary-button" onClick={addImage} disabled={!imageUrl.trim() || remainingImages === 0}>
+                Add
+              </button>
+            </div>
+          </label>
+
+          {formData.images.length > 0 && (
+            <div className="image-preview-grid">
+              {formData.images.map((url) => (
+                <figure key={url} className="evidence-preview">
+                  <img src={url} alt="Issue evidence" />
+                  <button type="button" onClick={() => removeImage(url)} aria-label="Remove evidence image">Remove</button>
+                </figure>
+              ))}
+            </div>
+          )}
+
+          <p className="muted">{remainingImages} evidence image slot{remainingImages === 1 ? "" : "s"} remaining.</p>
 
           <button type="submit" disabled={loading}>
             {loading ? "Submitting report..." : "Submit issue"}
