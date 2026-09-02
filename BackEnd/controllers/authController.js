@@ -48,11 +48,12 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
     const user = await User.findOne({ email: email?.trim().toLowerCase() }).populate("department", "name code");
 
     if (!user || !password) return res.status(400).json({ message: "Invalid credentials" });
     if (user.isActive === false) return res.status(403).json({ message: "This account has been deactivated" });
+    if (role && user.role !== role) return res.status(403).json({ message: "This account does not have access to this portal" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
