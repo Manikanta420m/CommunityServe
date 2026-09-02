@@ -63,11 +63,18 @@ const Analytics = () => {
         <BarList title="By Priority" items={data.priorityBreakdown} labelKey="priority" />
 
         <section className="analytics-card">
-          <div className="section-heading"><h2>Community engagement</h2></div>
-          <div className="engagement-highlight">
-            <strong>{data.totals.votes}</strong>
-            <span>Total community votes</span>
+          <div className="section-heading"><h2>Citizen feedback</h2></div>
+          <div className="feedback-analytics-grid">
+            <div><strong>{data.feedback?.responses || 0}</strong><span>Responses</span></div>
+            <div><strong>{data.feedback?.averageRating || 0}/5</strong><span>Average rating</span></div>
+            <div><strong>{data.feedback?.reopenRequests || 0}</strong><span>Review requests</span></div>
           </div>
+          <p className="muted">Use feedback to identify resolutions that need improvement and departments that consistently deliver strong outcomes.</p>
+        </section>
+
+        <section className="analytics-card">
+          <div className="section-heading"><h2>Community engagement</h2></div>
+          <div className="engagement-highlight"><strong>{data.totals.votes}</strong><span>Total community votes</span></div>
           <p className="muted">High-vote reports are surfaced below so administrators can prioritize issues with strong community demand.</p>
         </section>
       </div>
@@ -78,14 +85,8 @@ const Analytics = () => {
           <div className="issue-list">
             {data.topIssues.map((issue) => (
               <Link className="issue-row analytics-issue-row" key={issue._id} to={`/issues/${issue._id}`}>
-                <div>
-                  <h2>{issue.title}</h2>
-                  <p>{issue.location} · {issue.category} · {issue.priority}</p>
-                </div>
-                <div className="issue-row-meta">
-                  <span className="badge">{issue.status}</span>
-                  <strong>{issue.votes} votes</strong>
-                </div>
+                <div><h2>{issue.title}</h2><p>{issue.location} · {issue.category} · {issue.priority}</p></div>
+                <div className="issue-row-meta"><span className="badge">{issue.status}</span><strong>{issue.votes} votes</strong></div>
               </Link>
             ))}
           </div>
@@ -94,15 +95,10 @@ const Analytics = () => {
 
       <section className="analytics-card">
         <div className="section-heading"><h2>Reports — last 30 days</h2></div>
-        {data.recentTrend.length === 0 ? (
-          <p className="muted">No reports in the last 30 days.</p>
-        ) : (
+        {data.recentTrend.length === 0 ? <p className="muted">No reports in the last 30 days.</p> : (
           <div className="trend-list">
             {data.recentTrend.map((point) => (
-              <div key={point.date} className="trend-row">
-                <span>{new Date(`${point.date}T00:00:00`).toLocaleDateString()}</span>
-                <strong>{point.count}</strong>
-              </div>
+              <div key={point.date} className="trend-row"><span>{new Date(`${point.date}T00:00:00`).toLocaleDateString()}</span><strong>{point.count}</strong></div>
             ))}
           </div>
         )}
