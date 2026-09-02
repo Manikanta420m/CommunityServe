@@ -4,14 +4,17 @@ import toast from "react-hot-toast";
 
 import { getIssueById, voteIssue } from "../services/issueService";
 import { createComment, deleteComment, getComments } from "../services/commentService";
+import { getStatusHistory } from "../services/statusHistoryService";
 
 const IssueDetails = () => {
   const { id } = useParams();
   const [issue, setIssue] = useState(null);
   const [comments, setComments] = useState([]);
+  const [history, setHistory] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(true);
   const [commentsLoading, setCommentsLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [voting, setVoting] = useState(false);
   const [commenting, setCommenting] = useState(false);
 
@@ -20,17 +23,21 @@ const IssueDetails = () => {
       try {
         setLoading(true);
         setCommentsLoading(true);
-        const [issueData, commentData] = await Promise.all([
+        setHistoryLoading(true);
+        const [issueData, commentData, historyData] = await Promise.all([
           getIssueById(id),
           getComments(id),
+          getStatusHistory(id),
         ]);
         setIssue(issueData);
         setComments(commentData);
+        setHistory(historyData);
       } catch (error) {
         toast.error(error.response?.data?.message || "Unable to load issue");
       } finally {
         setLoading(false);
         setCommentsLoading(false);
+        setHistoryLoading(false);
       }
     };
 
@@ -145,6 +152,33 @@ const IssueDetails = () => {
         <button type="button" onClick={handleVote} disabled={voting}>
           {voting ? "Updating..." : "Vote / Remove vote"}
         </button>
+      </section>
+
+      <section className="timeline-section">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Progress tracking</p>
+            <h2>Status history</h2>
+          </div>
+        </div>
+        {historyLoading ? (
+          <p className="muted">Loading status history...</p>
+        ) : history.length === 0 ? (
+          <p className="muted">No status history available yet.</p>
+        ) : (
+          <div className="status-timeline">
+            {history.map((entry, index) => (
+              <div className="timeline-item" key={entry._id}>
+                <span className={`timeline-dot ${index === history.length - 1 ? "active" : ""}`} />
+                <div>
+                  <strong>{entry.status}</strong>
+                  <span className="muted">{new Date(entry.createdAt).toLocaleString()} · {entry.changedBy?.name || "CommunityServe staff"}</span>
+                  {entry.note && <p>{entry.note}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="comments-section">
