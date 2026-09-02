@@ -6,7 +6,14 @@ import { getDepartments } from "../services/departmentService";
 import { getUsers, updateUser } from "../services/adminUserService";
 import { getCurrentUser } from "../services/userService";
 
-const roles = ["user", "authority", "admin"];
+const roles = ["user", "authority", "corporate_leader", "admin"];
+
+const roleLabels = {
+  user: "Citizen",
+  authority: "Authority",
+  corporate_leader: "Corporate Leader",
+  admin: "Administrator",
+};
 
 const UserManagement = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -58,13 +65,13 @@ const UserManagement = () => {
   };
 
   const handleRoleChange = (user, nextRole) => {
-    if (nextRole === "authority" && !user.department?._id) {
-      toast.error("Select a department for this user before making them an authority");
+    if (["authority", "corporate_leader"].includes(nextRole) && !user.department?._id) {
+      toast.error("Select a department for this staff role first");
       return;
     }
     saveUser(user._id, {
       role: nextRole,
-      department: nextRole === "authority" ? user.department._id : null,
+      department: ["authority", "corporate_leader"].includes(nextRole) ? user.department._id : null,
     });
   };
 
@@ -77,7 +84,7 @@ const UserManagement = () => {
         <div>
           <p className="eyebrow">Administration</p>
           <h1>User Management</h1>
-          <p className="muted">Promote staff, assign authorities to departments, and deactivate accounts when needed.</p>
+          <p className="muted">Manage citizens, authorities and department leaders. Leadership accounts are assigned to a department so access remains scoped.</p>
         </div>
         <Link className="secondary-button" to="/admin">Back to admin</Link>
       </div>
@@ -86,7 +93,7 @@ const UserManagement = () => {
         <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by name or email" aria-label="Search users" />
         <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} aria-label="Filter by role">
           <option value="">All roles</option>
-          {roles.map((role) => <option key={role} value={role}>{role}</option>)}
+          {roles.map((role) => <option key={role} value={role}>{roleLabels[role]}</option>)}
         </select>
       </section>
 
@@ -99,17 +106,18 @@ const UserManagement = () => {
               <div>
                 <h2>{user.name}</h2>
                 <p>{user.email}</p>
+                <span className="badge">{roleLabels[user.role] || user.role}</span>{" "}
                 <span className={`badge ${user.isActive ? "" : "status-closed"}`}>{user.isActive ? "Active" : "Inactive"}</span>
               </div>
               <div className="user-admin-controls">
                 <label>
                   Role
                   <select value={user.role} disabled={savingId === user._id || user._id === currentUser.id} onChange={(event) => handleRoleChange(user, event.target.value)}>
-                    {roles.map((role) => <option key={role}>{role}</option>)}
+                    {roles.map((role) => <option key={role} value={role}>{roleLabels[role]}</option>)}
                   </select>
                 </label>
 
-                {user.role === "authority" && (
+                {["authority", "corporate_leader"].includes(user.role) && (
                   <label>
                     Department
                     <select value={user.department?._id || ""} disabled={savingId === user._id} onChange={(event) => saveUser(user._id, { department: event.target.value })}>
@@ -128,6 +136,7 @@ const UserManagement = () => {
             <div className="assignment-summary">
               <span className="muted">Department: {user.department?.name || "None"}</span>
               <span className="muted">Joined: {new Date(user.createdAt).toLocaleDateString()}</span>
+              {user.role === "corporate_leader" && <span className="badge">Leadership access</span>}
             </div>
           </article>
         ))}

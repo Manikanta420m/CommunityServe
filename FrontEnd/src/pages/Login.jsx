@@ -21,7 +21,7 @@ const Login = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       toast.success("Welcome back!");
-      navigate("/");
+      navigate(data.user.role === "corporate_leader" ? "/leader" : "/");
     } catch (error) {
       toast.error(error.response?.data?.message || "Login failed");
     } finally {
@@ -32,36 +32,18 @@ const Login = () => {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit}>
+        <p className="eyebrow">Citizen & staff access</p>
         <h1>Welcome back</h1>
-        <p>Login to track and support community issues.</p>
+        <p>Login to report, support and track community issues.</p>
 
-        <label>Email</label>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          placeholder="Enter your email"
-          onChange={handleChange}
-          required
-        />
+        <div className="auth-form">
+          <label>Email<input type="email" name="email" value={formData.email} placeholder="Enter your email" onChange={handleChange} required /></label>
+          <label>Password<input type="password" name="password" value={formData.password} placeholder="Enter your password" onChange={handleChange} required /></label>
+          <button type="submit" disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
+        </div>
 
-        <label>Password</label>
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          placeholder="Enter your password"
-          onChange={handleChange}
-          required
-        />
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-
-        <p className="auth-footer">
-          New here? <Link to="/register">Create an account</Link>
-        </p>
+        <p className="auth-footer" style={{ marginTop: 20 }}>New here? <Link to="/register">Create an account</Link></p>
+        <p className="auth-footer" style={{ marginTop: 10 }}>Department leader? <Link to="/leader-login">Open the Leader Portal</Link></p>
       </form>
     </div>
   );
