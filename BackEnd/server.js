@@ -7,6 +7,8 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const issueRoutes = require("./routes/issueRoutes");
 const commentRoutes = require("./routes/commentRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const statusHistoryRoutes = require("./routes/statusHistoryRoutes");
 
 const app = express();
 
@@ -18,6 +20,8 @@ app.use(express.json({ limit: "1mb" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/issues", issueRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/status-history", statusHistoryRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "CommunityServe API is running" });
