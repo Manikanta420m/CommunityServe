@@ -60,15 +60,45 @@ const issueSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
       default: null,
+      index: true,
     },
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
+      index: true,
     },
     targetDate: {
       type: Date,
       default: null,
+    },
+    leaderReview: {
+      reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      reviewedAt: {
+        type: Date,
+        default: null,
+      },
+      note: {
+        type: String,
+        trim: true,
+        maxlength: 1000,
+        default: "",
+      },
+      escalationLevel: {
+        type: String,
+        enum: ["Normal", "Watch", "Escalated"],
+        default: "Normal",
+      },
+      escalationReason: {
+        type: String,
+        trim: true,
+        maxlength: 500,
+        default: "",
+      },
     },
     voters: [
       {
