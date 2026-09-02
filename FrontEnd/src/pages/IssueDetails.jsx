@@ -121,6 +121,16 @@ const IssueDetails = () => {
 
         <p className="detail-description">{issue.description}</p>
 
+        <div className="assignment-panel">
+          <p className="eyebrow">Authority assignment</p>
+          <div className="assignment-summary">
+            <span className="badge">{issue.department?.code || "Awaiting department"}</span>
+            <span className="muted">{issue.department?.name || "No department assigned yet"}</span>
+            <span className="muted">Officer: {issue.assignedTo?.name || "Not assigned"}</span>
+            {issue.targetDate && <span className="muted">Target: {new Date(issue.targetDate).toLocaleDateString()}</span>}
+          </div>
+        </div>
+
         {issue.images?.length > 0 && (
           <div className="evidence-section">
             <div className="section-heading"><h2>Evidence</h2></div>
