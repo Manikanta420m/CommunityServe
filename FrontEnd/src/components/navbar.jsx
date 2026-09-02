@@ -12,26 +12,20 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <Link to="/" className="brand">
-        CommunityServe
-      </Link>
-
+      <Link to="/" className="brand">CommunityServe</Link>
       <div className="nav-links">
         {isLoggedIn ? (
           <>
             <Link to="/">Dashboard</Link>
+            <Link to="/my-issues">My Issues</Link>
             <Link to="/create-issue">Report Issue</Link>
             <Link to="/profile">Profile</Link>
-            <button className="logout-btn" onClick={logoutHandler}>
-              Logout
-            </button>
+            <button className="logout-btn" onClick={logoutHandler}>Logout</button>
           </>
         ) : (
           <>
             <Link to="/login">Login</Link>
-            <Link to="/register" className="nav-register">
-              Get Started
-            </Link>
+            <Link to="/register" className="nav-register">Get Started</Link>
           </>
         )}
       </div>
