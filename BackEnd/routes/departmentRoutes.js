@@ -4,7 +4,8 @@ const { protect, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/", protect, getDepartments);
-router.post("/", protect, authorize("admin"), createDepartment);
+router.use(protect);
+router.get("/", getDepartments);
+router.post("/", authorize("admin"), createDepartment);
 
 module.exports = router;
