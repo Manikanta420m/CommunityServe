@@ -3,11 +3,14 @@ const Department = require("../models/Department");
 const Issue = require("../models/Issue");
 const Notification = require("../models/Notification");
 
+const ASSIGNABLE_ROLES = ["authority"];
+const VALID_ROLES = ["user", "authority", "corporate_leader", "admin"];
+
 const getAssignableUsers = async (req, res) => {
   try {
     const search = req.query.search?.trim();
     const department = req.query.department?.trim();
-    const filter = { role: "authority", isActive: true };
+    const filter = { role: { $in: ASSIGNABLE_ROLES }, isActive: true };
 
     if (department) filter.department = department;
 
@@ -36,7 +39,7 @@ const getUsers = async (req, res) => {
     const role = req.query.role?.trim();
     const filter = {};
 
-    if (role && ["user", "authority", "admin"].includes(role)) filter.role = role;
+    if (role && VALID_ROLES.includes(role)) filter.role = role;
 
     if (search) {
       filter.$or = [
@@ -69,15 +72,15 @@ const updateUser = async (req, res) => {
     const previousRole = user.role;
     const wasActive = user.isActive !== false;
 
-    if (role !== undefined && !["user", "authority", "admin"].includes(role)) {
+    if (role !== undefined && !VALID_ROLES.includes(role)) {
       return res.status(400).json({ message: "Invalid user role" });
     }
 
     const nextRole = role ?? user.role;
     const nextDepartment = department !== undefined ? department : user.department;
 
-    if (nextRole === "authority" && !nextDepartment) {
-      return res.status(400).json({ message: "Authority users must belong to a department" });
+    if (["authority", "corporate_leader"].includes(nextRole) && !nextDepartment) {
+      return res.status(400).json({ message: "Staff leadership users must belong to a department" });
     }
 
     if (department !== undefined && department !== null && department !== "") {
@@ -93,9 +96,9 @@ const updateUser = async (req, res) => {
     if (role !== undefined) user.role = role;
     if (isActive !== undefined) user.isActive = Boolean(isActive);
 
-    if (user.role !== "authority") user.department = null;
-    if (user.role === "authority" && !user.department) {
-      return res.status(400).json({ message: "Authority users must belong to a department" });
+    if (!["authority", "corporate_leader"].includes(user.role)) user.department = null;
+    if (["authority", "corporate_leader"].includes(user.role) && !user.department) {
+      return res.status(400).json({ message: "Staff leadership users must belong to a department" });
     }
 
     await user.save();
@@ -111,18 +114,18 @@ const updateUser = async (req, res) => {
             issue: issue._id,
             type: "system",
             title: "Issue needs reassignment",
-            message: `The authority previously assigned to “${issue.title}” is no longer available. An administrator needs to assign a new authority.`,
+            message: `The authority previously assigned to “${issue.title}” is no longer available. A department leader or administrator needs to assign a new authority.`,
           }))
         );
       }
     }
 
-    if (!wasActive && user.isActive && user.role === "authority") {
+    if (!wasActive && user.isActive && ["authority", "corporate_leader"].includes(user.role)) {
       await Notification.create({
         recipient: user._id,
         type: "system",
-        title: "Authority account activated",
-        message: "Your CommunityServe authority account is active again.",
+        title: "Staff account activated",
+        message: "Your CommunityServe staff account is active again.",
       });
     }
 
