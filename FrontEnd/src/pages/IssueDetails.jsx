@@ -3,12 +3,21 @@ import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { getIssueById, voteIssue } from "../services/issueService";
+import {
+  createComment,
+  deleteComment,
+  getComments,
+} from "../services/commentService";
 
 const IssueDetails = () => {
   const { id } = useParams();
   const [issue, setIssue] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [commentsLoading, setCommentsLoading] = useState(true);
   const [voting, setVoting] = useState(false);
+  const [commenting, setCommenting] = useState(false);
 
   const loadIssue = async () => {
     try {
@@ -18,6 +27,17 @@ const IssueDetails = () => {
       toast.error(error.response?.data?.message || "Unable to load issue");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadComments = async () => {
+    try {
+      setCommentsLoading(true);
+      setComments(await getComments(id));
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to load comments");
+    } finally {
+      setCommentsLoading(false);
     }
   };
 
@@ -34,11 +54,45 @@ const IssueDetails = () => {
     }
   };
 
+  const handleComment = async (event) => {
+    event.preventDefault();
+
+    if (!commentText.trim()) return;
+
+    try {
+      setCommenting(true);
+      const comment = await createComment(id, commentText);
+      setComments((current) => [comment, ...current]);
+      setCommentText("");
+      toast.success("Comment added");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to add comment");
+    } finally {
+      setCommenting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await deleteComment(commentId);
+      setComments((current) =>
+        current.filter((comment) => comment._id !== commentId)
+      );
+      toast.success("Comment deleted");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to delete comment");
+    }
+  };
+
   useEffect(() => {
     loadIssue();
+    loadComments();
   }, [id]);
 
-  if (loading) return <main className="container"><p>Loading issue...</p></main>;
+  if (loading) {
+    return <main className="container"><p>Loading issue...</p></main>;
+  }
+
   if (!issue) {
     return (
       <main className="container empty-state">
@@ -54,14 +108,20 @@ const IssueDetails = () => {
         <div>
           <p className="eyebrow">Community issue</p>
           <h1>{issue.title}</h1>
-          <p className="muted">Reported by {issue.createdBy?.name || "Community member"}</p>
+          <p className="muted">
+            Reported by {issue.createdBy?.name || "Community member"}
+          </p>
         </div>
         <Link className="secondary-button" to="/">Back</Link>
       </div>
 
       <section className="detail-card">
         <div className="detail-badges">
-          <span className={`badge status-${issue.status.toLowerCase().replaceAll(" ", "-")}`}>
+          <span
+            className={`badge status-${issue.status
+              .toLowerCase()
+              .replaceAll(" ", "-")}`}
+          >
             {issue.status}
           </span>
           <span className="badge">{issue.category}</span>
@@ -80,6 +140,74 @@ const IssueDetails = () => {
         <button type="button" onClick={handleVote} disabled={voting}>
           {voting ? "Updating..." : "Vote / Remove vote"}
         </button>
+      </section>
+
+      <section className="comments-section">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Community discussion</p>
+            <h2>Comments ({comments.length})</h2>
+          </div>
+        </div>
+
+        <form className="comment-form" onSubmit={handleComment}>
+          <textarea
+            value={commentText}
+            onChange={(event) => setCommentText(event.target.value)}
+            placeholder="Share useful information, updates, or context..."
+            maxLength={1000}
+            rows={4}
+            required
+          />
+          <div className="comment-form-footer">
+            <span className="muted">{commentText.length}/1000</span>
+            <button type="submit" disabled={commenting || !commentText.trim()}>
+              {commenting ? "Posting..." : "Add comment"}
+            </button>
+          </div>
+        </form>
+
+        {commentsLoading ? (
+          <p className="muted">Loading comments...</p>
+        ) : comments.length === 0 ? (
+          <div className="empty-state">
+            <h3>No comments yet</h3>
+            <p>Be the first person to add useful context to this issue.</p>
+          </div>
+        ) : (
+          <div className="comments-list">
+            {comments.map((comment) => {
+              const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+              const canDelete =
+                currentUser &&
+                (currentUser.role === "admin" ||
+                  currentUser._id === comment.author?._id);
+
+              return (
+                <article className="comment-card" key={comment._id}>
+                  <div className="comment-header">
+                    <div>
+                      <strong>{comment.author?.name || "Community member"}</strong>
+                      <span className="muted">
+                        {new Date(comment.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    {canDelete && (
+                      <button
+                        type="button"
+                        className="danger-button"
+                        onClick={() => handleDeleteComment(comment._id)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                  <p>{comment.content}</p>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
     </main>
   );
