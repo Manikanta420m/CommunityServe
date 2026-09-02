@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 
+import NotificationCenter from "./NotificationCenter";
+
 const Navbar = () => {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -27,6 +29,7 @@ const Navbar = () => {
                 <Link to="/admin/users">Users</Link>
               </>
             )}
+            <NotificationCenter />
             <Link to="/profile">Profile</Link>
             <button className="logout-btn" onClick={logoutHandler}>Logout</button>
           </>
