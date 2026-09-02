@@ -10,6 +10,7 @@ const commentRoutes = require("./routes/commentRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const statusHistoryRoutes = require("./routes/statusHistoryRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const departmentRoutes = require("./routes/departmentRoutes");
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/status-history", statusHistoryRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/departments", departmentRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "CommunityServe API is running" });
