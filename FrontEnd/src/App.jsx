@@ -7,6 +7,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import CreateIssue from "./pages/CreateIssue";
 import Profile from "./pages/Profile";
+import IssueDetails from "./pages/IssueDetails";
+import MyIssues from "./pages/MyIssues";
 
 function App() {
   return (
@@ -31,6 +33,24 @@ function App() {
           element={
             <ProtectedRoute>
               <CreateIssue />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/issues/:id"
+          element={
+            <ProtectedRoute>
+              <IssueDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/my-issues"
+          element={
+            <ProtectedRoute>
+              <MyIssues />
             </ProtectedRoute>
           }
         />
