@@ -1,70 +1,116 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+
 import { registerUser } from "../services/authService";
 
-const Register = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+const initialForm = {
+  name: "",
+  email: "",
+  password: "",
+};
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+const Register = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState(initialForm);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (event) => {
+    setFormData((current) => ({
+      ...current,
+      [event.target.name]: event.target.value,
+    }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!formData.name.trim() || !formData.email.trim() || !formData.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error("Password must contain at least 6 characters");
+      return;
+    }
 
     try {
-      const data = await registerUser(formData);
+      setLoading(true);
+      const data = await registerUser({
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+      });
 
-      console.log(data);
-      toast.success("User Registered Successfully");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      toast.success("Account created successfully");
+      navigate("/");
     } catch (error) {
-      console.log(error);
-      toast.error("Registration Failed");;
+      toast.error(error.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container">
-      <h1>Register</h1>
+    <main className="auth-page">
+      <section className="auth-card">
+        <h1>Create your CommunityServe account</h1>
+        <p>Report local problems and help your community get them resolved.</p>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Enter Name"
-          onChange={handleChange}
-        />
+        <form onSubmit={handleSubmit} className="auth-form">
+          <label>
+            Name
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              placeholder="Your name"
+              onChange={handleChange}
+              autoComplete="name"
+              required
+            />
+          </label>
 
-        <br />
+          <label>
+            Email
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              placeholder="you@example.com"
+              onChange={handleChange}
+              autoComplete="email"
+              required
+            />
+          </label>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter Email"
-          onChange={handleChange}
-        />
+          <label>
+            Password
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              placeholder="At least 6 characters"
+              onChange={handleChange}
+              autoComplete="new-password"
+              minLength={6}
+              required
+            />
+          </label>
 
-        <br />
+          <button type="submit" disabled={loading}>
+            {loading ? "Creating account..." : "Create account"}
+          </button>
+        </form>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter Password"
-          onChange={handleChange}
-        />
-
-        <br />
-
-        <button type="submit">Register</button>
-      </form>
-    </div>
+        <p className="auth-footer">
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
+      </section>
+    </main>
   );
 };
 

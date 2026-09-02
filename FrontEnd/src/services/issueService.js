@@ -23,8 +23,21 @@ export const getIssues = async (params = {}) => {
   return response.data;
 };
 
+export const getMyIssues = async (params = {}) => {
+  const response = await issueApi.get("/mine", {
+    params,
+    ...authConfig(),
+  });
+  return response.data;
+};
+
 export const getIssueById = async (id) => {
   const response = await issueApi.get(`/${id}`);
+  return response.data;
+};
+
+export const updateIssue = async (id, issueData) => {
+  const response = await issueApi.put(`/${id}`, issueData, authConfig());
   return response.data;
 };
 

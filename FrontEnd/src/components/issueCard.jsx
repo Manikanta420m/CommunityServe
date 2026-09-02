@@ -1,31 +1,30 @@
+import { Link } from "react-router-dom";
+
 const IssueCard = ({ issue, handleVote }) => {
   return (
-    <div
-      style={{
-  border: "1px solid #ddd",
-  borderRadius: "10px",
-  padding: "20px",
-  marginBottom: "20px",
-  backgroundColor: "white",
-  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-}}
-    >
-      <h2>{issue.title}</h2>
+    <article className="issue-card">
+      <div className="issue-card-topline">
+        <span className="badge">{issue.category}</span>
+        <span className={`badge status-${issue.status.toLowerCase().replaceAll(" ", "-")}`}>
+          {issue.status}
+        </span>
+      </div>
 
-      <p>{issue.description}</p>
+      <Link className="issue-title" to={`/issues/${issue._id}`}>
+        <h2>{issue.title}</h2>
+      </Link>
 
-      <p>Category: {issue.category}</p>
+      <p className="issue-description">{issue.description}</p>
+      <p className="muted">{issue.location}</p>
 
-      <p>Location: {issue.location}</p>
-
-      <p>Status: {issue.status}</p>
-
-      <p>Votes: {issue.votes}</p>
-
-      <button onClick={() => handleVote(issue._id)}>
-        Vote
-      </button>
-    </div>
+      <div className="issue-card-bottom">
+        <span>{issue.votes} vote{issue.votes === 1 ? "" : "s"}</span>
+        <span>{issue.priority} priority</span>
+        <button type="button" onClick={() => handleVote(issue._id)}>
+          Vote
+        </button>
+      </div>
+    </article>
   );
 };
 

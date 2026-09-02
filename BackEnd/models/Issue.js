@@ -26,6 +26,26 @@ const issueSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    coordinates: {
+      latitude: { type: Number, min: -90, max: 90 },
+      longitude: { type: Number, min: -180, max: 180 },
+    },
+    images: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (images) => images.length <= 5,
+        message: "A maximum of 5 evidence images is allowed",
+      },
+    },
+    resolutionEvidence: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (images) => images.length <= 5,
+        message: "A maximum of 5 resolution evidence images is allowed",
+      },
+    },
     priority: {
       type: String,
       enum: ["Low", "Medium", "High", "Critical"],
@@ -35,6 +55,20 @@ const issueSchema = new mongoose.Schema(
       type: String,
       enum: ["Pending", "Under Review", "In Progress", "Resolved", "Closed"],
       default: "Pending",
+    },
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+      default: null,
+    },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    targetDate: {
+      type: Date,
+      default: null,
     },
     voters: [
       {
