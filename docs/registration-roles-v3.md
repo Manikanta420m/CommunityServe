@@ -1,1 +1,0 @@
-The signup page supports Citizen and Corporate Leader account types. Public signup cannot create admin or authority roles.
