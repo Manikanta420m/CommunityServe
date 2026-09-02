@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
+import LeaderLogin from "./pages/LeaderLogin";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import CreateIssue from "./pages/CreateIssue";
@@ -13,6 +14,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Analytics from "./pages/Analytics";
 import UserManagement from "./pages/UserManagement";
 import AuthorityDashboard from "./pages/AuthorityDashboard";
+import LeaderDashboard from "./pages/LeaderDashboard";
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
 
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/leader-login" element={<LeaderLogin />} />
         <Route path="/register" element={<Register />} />
 
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -32,6 +35,7 @@ function App() {
         <Route path="/analytics" element={<ProtectedRoute allowedRoles={["admin"]}><Analytics /></ProtectedRoute>} />
         <Route path="/admin/users" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagement /></ProtectedRoute>} />
         <Route path="/authority" element={<ProtectedRoute allowedRoles={["authority"]}><AuthorityDashboard /></ProtectedRoute>} />
+        <Route path="/leader" element={<ProtectedRoute allowedRoles={["corporate_leader"]}><LeaderDashboard /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
