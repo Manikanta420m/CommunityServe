@@ -1,0 +1,1 @@
+Public signup supports Citizen and Corporate Leader account types. Admin and Authority remain controlled roles.
