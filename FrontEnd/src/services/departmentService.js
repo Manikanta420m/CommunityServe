@@ -8,6 +8,11 @@ const authConfig = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
 });
 
+export const getPublicDepartments = async () => {
+  const response = await departmentApi.get("/public");
+  return response.data;
+};
+
 export const getDepartments = async () => {
   const response = await departmentApi.get("/", authConfig());
   return response.data;
