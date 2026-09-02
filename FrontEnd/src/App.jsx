@@ -12,6 +12,7 @@ import MyIssues from "./pages/MyIssues";
 import AdminDashboard from "./pages/AdminDashboard";
 import Analytics from "./pages/Analytics";
 import UserManagement from "./pages/UserManagement";
+import AuthorityDashboard from "./pages/AuthorityDashboard";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
         <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
         <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+        <Route path="/authority" element={<ProtectedRoute><AuthorityDashboard /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
