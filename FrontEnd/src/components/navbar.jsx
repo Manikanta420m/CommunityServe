@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const isLoggedIn = Boolean(localStorage.getItem("token"));
 
   const logoutHandler = () => {
@@ -19,6 +20,7 @@ const Navbar = () => {
             <Link to="/">Dashboard</Link>
             <Link to="/my-issues">My Issues</Link>
             <Link to="/create-issue">Report Issue</Link>
+            {storedUser?.role === "admin" && <Link to="/admin">Admin</Link>}
             <Link to="/profile">Profile</Link>
             <button className="logout-btn" onClick={logoutHandler}>Logout</button>
           </>
