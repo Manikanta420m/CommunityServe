@@ -1,11 +1,15 @@
 const express = require("express");
-const { getDepartments, createDepartment } = require("../controllers/departmentController");
+const {
+  getPublicDepartments,
+  getDepartments,
+  createDepartment,
+} = require("../controllers/departmentController");
 const { protect, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.use(protect);
-router.get("/", getDepartments);
-router.post("/", authorize("admin"), createDepartment);
+router.get("/public", getPublicDepartments);
+router.get("/", protect, getDepartments);
+router.post("/", protect, authorize("admin"), createDepartment);
 
 module.exports = router;
