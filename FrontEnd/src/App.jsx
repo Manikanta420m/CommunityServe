@@ -9,6 +9,7 @@ import CreateIssue from "./pages/CreateIssue";
 import Profile from "./pages/Profile";
 import IssueDetails from "./pages/IssueDetails";
 import MyIssues from "./pages/MyIssues";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -19,50 +20,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/create-issue"
-          element={
-            <ProtectedRoute>
-              <CreateIssue />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/issues/:id"
-          element={
-            <ProtectedRoute>
-              <IssueDetails />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/my-issues"
-          element={
-            <ProtectedRoute>
-              <MyIssues />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/create-issue" element={<ProtectedRoute><CreateIssue /></ProtectedRoute>} />
+        <Route path="/issues/:id" element={<ProtectedRoute><IssueDetails /></ProtectedRoute>} />
+        <Route path="/my-issues" element={<ProtectedRoute><MyIssues /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
