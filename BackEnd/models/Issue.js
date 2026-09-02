@@ -38,6 +38,14 @@ const issueSchema = new mongoose.Schema(
         message: "A maximum of 5 evidence images is allowed",
       },
     },
+    resolutionEvidence: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (images) => images.length <= 5,
+        message: "A maximum of 5 resolution evidence images is allowed",
+      },
+    },
     priority: {
       type: String,
       enum: ["Low", "Medium", "High", "Critical"],
