@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Department = require("../models/Department");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -19,12 +20,17 @@ const createToken = (userId) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role = "user", department } = req.body;
+    const allowedRoles = ["user", "corporate_leader"];
+
     if (!name?.trim() || !email?.trim() || !password) {
       return res.status(400).json({ message: "Name, email and password are required" });
     }
     if (password.length < 6) {
       return res.status(400).json({ message: "Password must contain at least 6 characters" });
+    }
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ message: "You can register only as a citizen or corporate leader" });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -32,13 +38,32 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name: name.trim(), email: normalizedEmail, password: hashedPassword });
+    let departmentId = null;
+    if (role === "corporate_leader") {
+      if (!department) {
+        return res.status(400).json({ message: "Department is required for leader registration" });
+      }
+      const departmentRecord = await Department.findOne({ _id: department, active: true }).select("_id name code");
+      if (!departmentRecord) {
+        return res.status(400).json({ message: "Department not found or inactive" });
+      }
+      departmentId = departmentRecord._id;
+    }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
+      role,
+      department: departmentId,
+    });
+
+    const populatedUser = await user.populate("department", "name code");
     res.status(201).json({
-      message: "User registered successfully",
+      message: role === "corporate_leader" ? "Leader account created successfully" : "Citizen account created successfully",
       token: createToken(user._id),
-      user: sanitizeUser(user),
+      user: sanitizeUser(populatedUser),
     });
   } catch (error) {
     if (error.code === 11000) return res.status(400).json({ message: "User already exists" });
