@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { createIssue } from "../services/issueService";
+import IssueIntelligence from "../components/IssueIntelligence";
 
 const categories = ["Roads", "Garbage", "Streetlights", "Water", "Drainage", "Other"];
 const priorities = ["Low", "Medium", "High", "Critical"];
@@ -28,6 +29,10 @@ const CreateIssue = () => {
     setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
   };
 
+  const applyAiSuggestions = (category, priority) => {
+    setFormData((current) => ({ ...current, category, priority }));
+  };
+
   const addImage = () => {
     const url = imageUrl.trim();
     if (!url) return;
@@ -35,23 +40,18 @@ const CreateIssue = () => {
       toast.error("You can add up to 5 evidence images");
       return;
     }
-
     try {
       new URL(url);
     } catch {
       toast.error("Enter a valid image URL");
       return;
     }
-
     setFormData((current) => ({ ...current, images: [...current.images, url] }));
     setImageUrl("");
   };
 
   const removeImage = (url) => {
-    setFormData((current) => ({
-      ...current,
-      images: current.images.filter((image) => image !== url),
-    }));
+    setFormData((current) => ({ ...current, images: current.images.filter((image) => image !== url) }));
   };
 
   const detectLocation = () => {
@@ -59,7 +59,6 @@ const CreateIssue = () => {
       toast.error("Geolocation is not supported by this browser");
       return;
     }
-
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
@@ -83,20 +82,13 @@ const CreateIssue = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     if (!formData.title.trim() || !formData.description.trim() || !formData.location.trim()) {
       toast.error("Please complete all required fields");
       return;
     }
-
     try {
       setLoading(true);
-      const issue = await createIssue({
-        ...formData,
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        location: formData.location.trim(),
-      });
+      const issue = await createIssue({ ...formData, title: formData.title.trim(), description: formData.description.trim(), location: formData.location.trim() });
       toast.success("Issue reported successfully");
       navigate(`/issues/${issue._id}`);
     } catch (error) {
@@ -128,6 +120,14 @@ const CreateIssue = () => {
             <textarea name="description" value={formData.description} onChange={handleChange} rows={6} placeholder="Explain what is happening, how serious it is, and anything that helps locate it." minLength={10} maxLength={2000} required />
           </label>
 
+          <IssueIntelligence
+            title={formData.title}
+            description={formData.description}
+            location={formData.location}
+            category={formData.category}
+            onApply={applyAiSuggestions}
+          />
+
           <div className="detail-grid">
             <label>
               Category
@@ -135,7 +135,6 @@ const CreateIssue = () => {
                 {categories.map((category) => <option key={category}>{category}</option>)}
               </select>
             </label>
-
             <label>
               Priority
               <select name="priority" value={formData.priority} onChange={handleChange}>
@@ -150,23 +149,15 @@ const CreateIssue = () => {
           </label>
 
           <div className="location-tools">
-            <button type="button" className="secondary-button" onClick={detectLocation} disabled={locating}>
-              {locating ? "Getting GPS..." : "Use my current location"}
-            </button>
-            {formData.coordinates && (
-              <span className="muted">
-                GPS: {formData.coordinates.latitude}, {formData.coordinates.longitude}
-              </span>
-            )}
+            <button type="button" className="secondary-button" onClick={detectLocation} disabled={locating}>{locating ? "Getting GPS..." : "Use my current location"}</button>
+            {formData.coordinates && <span className="muted">GPS: {formData.coordinates.latitude}, {formData.coordinates.longitude}</span>}
           </div>
 
           <label>
             Evidence image URL
             <div className="inline-form-row">
               <input value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://example.com/photo.jpg" />
-              <button type="button" className="secondary-button" onClick={addImage} disabled={!imageUrl.trim() || remainingImages === 0}>
-                Add
-              </button>
+              <button type="button" className="secondary-button" onClick={addImage} disabled={!imageUrl.trim() || remainingImages === 0}>Add</button>
             </div>
           </label>
 
@@ -182,10 +173,7 @@ const CreateIssue = () => {
           )}
 
           <p className="muted">{remainingImages} evidence image slot{remainingImages === 1 ? "" : "s"} remaining.</p>
-
-          <button type="submit" disabled={loading}>
-            {loading ? "Submitting report..." : "Submit issue"}
-          </button>
+          <button type="submit" disabled={loading}>{loading ? "Submitting report..." : "Submit issue"}</button>
         </form>
       </section>
     </main>
