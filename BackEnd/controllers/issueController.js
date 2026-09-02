@@ -104,7 +104,11 @@ const updateIssue = async (req, res) => {
     const isAdmin = req.user.role === "admin";
     if (!isOwner && !isAdmin) return res.status(403).json({ message: "You cannot update this issue" });
 
-    const { title, description, category, location, priority, status, images, coordinates, statusNote, department, assignedTo, targetDate } = req.body;
+    const {
+      title, description, category, location, priority, status, images, coordinates,
+      statusNote, department, assignedTo, targetDate,
+    } = req.body;
+
     if (isOwner && !isAdmin && status && status !== issue.status) {
       return res.status(403).json({ message: "Only an admin can change issue status" });
     }
@@ -118,6 +122,9 @@ const updateIssue = async (req, res) => {
       issue.images = images;
     }
     if (coordinates !== undefined) issue.coordinates = coordinates;
+
+    const previousDepartment = issue.department?.toString() || null;
+    const previousAssignee = issue.assignedTo?.toString() || null;
 
     if (isAdmin && department !== undefined) {
       if (!department) issue.department = null;
@@ -166,6 +173,27 @@ const updateIssue = async (req, res) => {
         recipient: issue.createdBy, issue: issue._id, type: "status_changed",
         title: "Issue status updated",
         message: `Your issue “${issue.title}” is now ${status}.`,
+      });
+    }
+
+    const departmentChanged = isAdmin && department !== undefined && (issue.department?.toString() || null) !== previousDepartment;
+    const assigneeChanged = isAdmin && assignedTo !== undefined && (issue.assignedTo?.toString() || null) !== previousAssignee;
+    if (departmentChanged || assigneeChanged) {
+      const departmentName = issue.department
+        ? (await Department.findById(issue.department).select("name"))?.name
+        : null;
+      const assignee = issue.assignedTo
+        ? await User.findById(issue.assignedTo).select("name")
+        : null;
+      const assignmentParts = [];
+      if (departmentChanged) assignmentParts.push(departmentName ? `department: ${departmentName}` : "department cleared");
+      if (assigneeChanged) assignmentParts.push(assignee ? `officer: ${assignee.name}` : "officer cleared");
+      await Notification.create({
+        recipient: issue.createdBy,
+        issue: issue._id,
+        type: "system",
+        title: "Issue assignment updated",
+        message: `Your issue assignment changed (${assignmentParts.join(", ")}).`,
       });
     }
 
