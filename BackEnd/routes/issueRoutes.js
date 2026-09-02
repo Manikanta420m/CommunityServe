@@ -9,12 +9,18 @@ const {
   deleteIssue,
   voteIssue,
 } = require("../controllers/issueController");
+const {
+  suggestIssueDetails,
+  findSimilarIssueRecords,
+} = require("../controllers/issueIntelligenceController");
 
 const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 router.route("/").get(getIssues).post(protect, createIssue);
+router.post("/ai/suggest", protect, suggestIssueDetails);
+router.post("/ai/similar", protect, findSimilarIssueRecords);
 router.get("/mine", protect, getMyIssues);
 router.get("/:id", getIssueById);
 router.put("/:id", protect, updateIssue);
