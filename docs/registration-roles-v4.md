@@ -1,1 +1,0 @@
-Citizen and Corporate Leader are the public registration options. Admin and Authority are not public signup roles.
