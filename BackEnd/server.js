@@ -37,6 +37,14 @@ app.get("/", (req, res) => {
   res.json({ message: "CommunityServe API is running" });
 });
 
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: "CommunityServe API",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });

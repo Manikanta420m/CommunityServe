@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: communityserve-api
+    env: node
+    rootDir: BackEnd
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
