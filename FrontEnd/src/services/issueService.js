@@ -36,6 +36,11 @@ export const getIssueById = async (id) => {
   return response.data;
 };
 
+export const updateIssue = async (id, issueData) => {
+  const response = await issueApi.put(`/${id}`, issueData, authConfig());
+  return response.data;
+};
+
 export const voteIssue = async (id) => {
   const response = await issueApi.put(`/${id}/vote`, {}, authConfig());
   return response.data;
