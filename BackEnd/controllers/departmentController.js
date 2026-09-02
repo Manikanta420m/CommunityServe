@@ -9,17 +9,26 @@ const defaultDepartments = [
   ["General Civic Services", "GENERAL"],
 ];
 
+const ensureDepartments = async () => {
+  const existing = await Department.find({ active: true }).sort({ name: 1 });
+  if (existing.length === 0) {
+    await Department.insertMany(defaultDepartments.map(([name, code]) => ({ name, code })));
+  }
+  return Department.find({ active: true }).sort({ name: 1 });
+};
+
+const getPublicDepartments = async (req, res) => {
+  try {
+    const departments = await ensureDepartments();
+    res.status(200).json(departments.map(({ _id, name, code }) => ({ _id, name, code })));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const getDepartments = async (req, res) => {
   try {
-    const existing = await Department.find({ active: true }).sort({ name: 1 });
-
-    if (existing.length === 0) {
-      await Department.insertMany(
-        defaultDepartments.map(([name, code]) => ({ name, code }))
-      );
-    }
-
-    const departments = await Department.find({ active: true }).sort({ name: 1 });
+    const departments = await ensureDepartments();
     res.status(200).json(departments);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -51,4 +60,4 @@ const createDepartment = async (req, res) => {
   }
 };
 
-module.exports = { getDepartments, createDepartment };
+module.exports = { getPublicDepartments, getDepartments, createDepartment };
