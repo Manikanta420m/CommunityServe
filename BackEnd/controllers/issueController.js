@@ -3,11 +3,30 @@ const Issue = require("../models/Issue");
 
 const createIssue = async (req, res) => {
   try {
-    const { title, description, category, location, priority } = req.body;
+    const {
+      title,
+      description,
+      category,
+      location,
+      priority,
+      images = [],
+      coordinates,
+    } = req.body;
 
-    if (!title?.trim() || !description?.trim() || !category?.trim() || !location?.trim()) {
+    if (
+      !title?.trim() ||
+      !description?.trim() ||
+      !category?.trim() ||
+      !location?.trim()
+    ) {
       return res.status(400).json({
         message: "Title, description, category and location are required",
+      });
+    }
+
+    if (!Array.isArray(images) || images.length > 5) {
+      return res.status(400).json({
+        message: "A maximum of 5 evidence images is allowed",
       });
     }
 
@@ -17,6 +36,8 @@ const createIssue = async (req, res) => {
       category: category.trim(),
       location: location.trim(),
       priority,
+      images: images.filter((url) => typeof url === "string" && url.trim()),
+      coordinates: coordinates || undefined,
       createdBy: req.user._id,
     });
 
@@ -53,11 +74,6 @@ const buildIssueFilter = (query) => {
 const getIssues = async (req, res) => {
   try {
     const { sort = "newest" } = req.query;
-    const sortMap = {
-      newest: { createdAt: -1 },
-      oldest: { createdAt: 1 },
-    };
-
     let issues = await Issue.find(buildIssueFilter(req.query)).populate(
       "createdBy",
       "name email"
@@ -65,11 +81,10 @@ const getIssues = async (req, res) => {
 
     if (sort === "votes") {
       issues.sort((a, b) => b.votes - a.votes);
+    } else if (sort === "oldest") {
+      issues.sort((a, b) => a.createdAt - b.createdAt);
     } else {
-      issues.sort((a, b) => {
-        const direction = sortMap[sort] || sortMap.newest;
-        return direction.createdAt * (a.createdAt - b.createdAt);
-      });
+      issues.sort((a, b) => b.createdAt - a.createdAt);
     }
 
     res.status(200).json(issues);
@@ -128,10 +143,21 @@ const updateIssue = async (req, res) => {
       return res.status(403).json({ message: "You cannot update this issue" });
     }
 
-    const { title, description, category, location, priority, status } = req.body;
+    const {
+      title,
+      description,
+      category,
+      location,
+      priority,
+      status,
+      images,
+      coordinates,
+    } = req.body;
 
     if (isOwner && !isAdmin && status && status !== issue.status) {
-      return res.status(403).json({ message: "Only an admin can change issue status" });
+      return res.status(403).json({
+        message: "Only an admin can change issue status",
+      });
     }
 
     if (title !== undefined) issue.title = title.trim();
@@ -139,6 +165,8 @@ const updateIssue = async (req, res) => {
     if (category !== undefined) issue.category = category.trim();
     if (location !== undefined) issue.location = location.trim();
     if (priority !== undefined) issue.priority = priority;
+    if (images !== undefined) issue.images = images;
+    if (coordinates !== undefined) issue.coordinates = coordinates;
     if (isAdmin && status !== undefined) issue.status = status;
 
     const updatedIssue = await issue.save();
