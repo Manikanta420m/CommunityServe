@@ -7,6 +7,8 @@ const sanitizeUser = (user) => ({
   name: user.name,
   email: user.email,
   role: user.role,
+  department: user.department,
+  isActive: user.isActive,
   createdAt: user.createdAt,
 });
 
@@ -65,6 +67,10 @@ const loginUser = async (req, res) => {
 
     if (!user || !password) {
       return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: "This account has been deactivated" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
