@@ -20,6 +20,7 @@ const Navbar = () => {
             <Link to="/">Dashboard</Link>
             <Link to="/my-issues">My Issues</Link>
             <Link to="/create-issue">Report Issue</Link>
+            {storedUser?.role === "authority" && <Link to="/authority">Authority Workspace</Link>}
             {storedUser?.role === "admin" && (
               <>
                 <Link to="/admin">Admin</Link>
