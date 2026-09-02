@@ -27,16 +27,8 @@ const issueSchema = new mongoose.Schema(
       trim: true,
     },
     coordinates: {
-      latitude: {
-        type: Number,
-        min: -90,
-        max: 90,
-      },
-      longitude: {
-        type: Number,
-        min: -180,
-        max: 180,
-      },
+      latitude: { type: Number, min: -90, max: 90 },
+      longitude: { type: Number, min: -180, max: 180 },
     },
     images: {
       type: [String],
@@ -55,6 +47,20 @@ const issueSchema = new mongoose.Schema(
       type: String,
       enum: ["Pending", "Under Review", "In Progress", "Resolved", "Closed"],
       default: "Pending",
+    },
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+      default: null,
+    },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    targetDate: {
+      type: Date,
+      default: null,
     },
     voters: [
       {
