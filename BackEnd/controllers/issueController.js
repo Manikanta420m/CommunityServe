@@ -127,12 +127,20 @@ const updateIssue = async (req, res) => {
     const previousAssignee = issue.assignedTo?.toString() || null;
 
     if (isAdmin && department !== undefined) {
-      if (!department) issue.department = null;
-      else {
+      if (!department) {
+        issue.department = null;
+        issue.assignedTo = null;
+      } else {
         if (!mongoose.isValidObjectId(department)) return res.status(400).json({ message: "Invalid department" });
         const departmentRecord = await Department.findOne({ _id: department, active: true });
-        if (!departmentRecord) return res.status(404).json({ message: "Department not found" });
+        if (!departmentRecord) return res.status(404).json({ message: "Department not found or inactive" });
         issue.department = departmentRecord._id;
+        if (assignedTo === undefined && issue.assignedTo) {
+          const currentAssignee = await User.findOne({ _id: issue.assignedTo, role: "authority", isActive: true }).select("_id department");
+          if (!currentAssignee || currentAssignee.department?.toString() !== departmentRecord._id.toString()) {
+            issue.assignedTo = null;
+          }
+        }
       }
     }
 
@@ -140,8 +148,12 @@ const updateIssue = async (req, res) => {
       if (!assignedTo) issue.assignedTo = null;
       else {
         if (!mongoose.isValidObjectId(assignedTo)) return res.status(400).json({ message: "Invalid assignee" });
-        const assignee = await User.findById(assignedTo).select("_id name email role");
-        if (!assignee) return res.status(404).json({ message: "Assignee not found" });
+        if (!issue.department) return res.status(400).json({ message: "Assign a department before assigning an authority" });
+        const assignee = await User.findOne({ _id: assignedTo, role: "authority", isActive: true }).select("_id name email role department");
+        if (!assignee) return res.status(404).json({ message: "Active authority not found" });
+        if (!assignee.department || assignee.department.toString() !== issue.department.toString()) {
+          return res.status(400).json({ message: "Authority must belong to the selected department" });
+        }
         issue.assignedTo = assignee._id;
       }
     }
@@ -165,7 +177,8 @@ const updateIssue = async (req, res) => {
 
     if (isAdmin && status !== undefined && status !== previousStatus) {
       await IssueStatusHistory.create({
-        issue: issue._id, status,
+        issue: issue._id,
+        status,
         note: typeof statusNote === "string" ? statusNote.trim().slice(0, 1000) : "",
         changedBy: req.user._id,
       });
@@ -179,22 +192,23 @@ const updateIssue = async (req, res) => {
     const departmentChanged = isAdmin && department !== undefined && (issue.department?.toString() || null) !== previousDepartment;
     const assigneeChanged = isAdmin && assignedTo !== undefined && (issue.assignedTo?.toString() || null) !== previousAssignee;
     if (departmentChanged || assigneeChanged) {
-      const departmentName = issue.department
-        ? (await Department.findById(issue.department).select("name"))?.name
-        : null;
-      const assignee = issue.assignedTo
-        ? await User.findById(issue.assignedTo).select("name")
-        : null;
+      const departmentName = issue.department ? (await Department.findById(issue.department).select("name"))?.name : null;
+      const assignee = issue.assignedTo ? await User.findById(issue.assignedTo).select("name") : null;
       const assignmentParts = [];
       if (departmentChanged) assignmentParts.push(departmentName ? `department: ${departmentName}` : "department cleared");
       if (assigneeChanged) assignmentParts.push(assignee ? `officer: ${assignee.name}` : "officer cleared");
       await Notification.create({
-        recipient: issue.createdBy,
-        issue: issue._id,
-        type: "system",
+        recipient: issue.createdBy, issue: issue._id, type: "system",
         title: "Issue assignment updated",
         message: `Your issue assignment changed (${assignmentParts.join(", ")}).`,
       });
+      if (assigneeChanged && issue.assignedTo) {
+        await Notification.create({
+          recipient: issue.assignedTo, issue: issue._id, type: "system",
+          title: "New issue assigned",
+          message: `You have been assigned “${issue.title}” in ${departmentName || "your department"}.`,
+        });
+      }
     }
 
     const populatedIssue = await updatedIssue.populate([
